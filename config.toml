@@ -1,6 +1,6 @@
 theme="polymer"
 
-baseurl = "https://blog.abourget.net"
+baseurl = "http://blog.abourget.net"
 languageCode = "en-us"
 title = "geek joy"
 
