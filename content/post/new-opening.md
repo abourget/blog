@@ -2,11 +2,9 @@
 Categories = []
 Tags = []
 date = "2015-12-22T01:51:49-05:00"
-title = "Welcome again"
+title = "A new blog.. again"
 
 +++
-
-### New blog, again
 
 Each new year brings its new blog platform.  My previous platform was
 a Blogofile, but then I lost track of the build process and didn,t
