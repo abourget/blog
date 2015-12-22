@@ -6,20 +6,18 @@ title = "geek joy"
 
 MetaDataFormat = "toml"
 paginate = 10 # optional
-# disqusShortname = "Alexandre Bourget" # optional
+disqusShortname = "blogabourget" # optional
 copyright = "© 2015 Copyright Alexandre Bourget"
 
 [params]
   author = "Alexandre Bourget"
-#  photo = "images/photo.jpg" # optional
   profile = "images/profile.jpg" # optional
   cover = "images/cover.jpg" # optional
   twitter = "bourgetalexndre" # optional
   github = "abourget" # optional
-#  facebook = "Your facebook Name" # optional
 #  gplus = "Your Google+ Name" # optional
   linkedin = "alexandrebourget" # optional
-#  googleAnalyticsUserID = "Your Analytics User Id" # optional
+  googleAnalyticsUserID = "UA-12745853-1"
 
 [permalinks]
   post = "/:year/:month/:day/:filename/"
