@@ -1,0 +1,29 @@
+---
+theme: "polymer"
+
+baseurl: "http://blog.abourget.net"
+languageCode: "en-us"
+title: "geek joy"
+
+paginate: 10 # optional
+disqusShortname: "blogabourget" # optional
+copyright: "© 2015 Copyright Alexandre Bourget"
+
+#multilingual: true
+#defaultContentLang: en
+
+params:
+  author: "Alexandre Bourget"
+  profile: "images/profile.jpg" # optional
+  cover: "images/cover.jpg" # optional
+  twitter: "bourgetalexndre" # optional
+  github: "abourget" # optional
+#  gplus: "Your Google+ Name" # optional
+  linkedin: "alexandrebourget" # optional
+  googleAnalyticsUserID: "UA-12745853-1"
+
+permalinks:
+  post: "/:year/:month/:day/:filename/"
+
+MetaDataFormat: "yaml"
+---
