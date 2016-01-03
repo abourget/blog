@@ -9,6 +9,7 @@
     "paper-menu": "PolymerElements/paper-menu#^1.0.0",
     "paper-item": "PolymerElements/paper-item#^1.0.0",
     "paper-fab": "PolymerElements/paper-fab#^1.0.0",
-    "iron-image": "PolymerElements/iron-image#^1.0.0"
+    "iron-image": "PolymerElements/iron-image#~1.0.4",
+    "paper-button": "PolymerElements/paper-button#~1.0.11"
   }
 }
