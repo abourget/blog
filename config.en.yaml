@@ -19,7 +19,7 @@ LinkLanguages:
 params:
   author: "Alexandre Bourget"
   profile: "images/profile.jpg" # optional
-  cover: "images/cover.jpg" # optional
+  cover: "images/cover-bw.jpg" # optional
   twitter: "bourgetalexndre" # optional
   github: "abourget" # optional
   linkedin: "alexandrebourget" # optional
