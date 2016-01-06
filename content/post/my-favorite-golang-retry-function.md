@@ -30,8 +30,6 @@ func retry(attempts int, callback func() error) (err error) {
 
 Use like this:
 
-<!--more-->
-
 ```
 		var valuableContent []byte
 		err := retry(5, func() error {
@@ -59,3 +57,5 @@ project that needs it, tweak the delays and the logging mechanisms,
 and be done.
 
 I license this to your under the MIT license.
+
+<!--more-->
