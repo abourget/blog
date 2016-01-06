@@ -41,3 +41,5 @@ func (c *ArtifactController) Get(ctx *app.GetArtifactContext) error {
 Writing the header before running `io.Copy()` is the trick to make
 sure the `goa` controller understand that you've handled the request
 properly, and it doesn't need to generate a 500 error.
+
+<!--more-->
