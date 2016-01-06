@@ -2,15 +2,19 @@
 theme: "polymer"
 
 baseurl: "https://blog.abourget.net"
-languageCode: "en-us"
+languageCode: "en-US"
 title: "geek joy"
 
 paginate: 10 # optional
 disqusShortname: "blogabourget" # optional
-copyright: "© 2015 Copyright Alexandre Bourget"
+copyright: "(ɔ) 2015 Copyleft. Alexandre Bourget."
 
-#multilingual: true
-#defaultContentLang: en
+Multilingual: true
+RenderLanguage: en
+DefaultContentLang: en
+LinkLanguages:
+ - en
+ - fr
 
 params:
   author: "Alexandre Bourget"
@@ -18,7 +22,6 @@ params:
   cover: "images/cover.jpg" # optional
   twitter: "bourgetalexndre" # optional
   github: "abourget" # optional
-#  gplus: "Your Google+ Name" # optional
   linkedin: "alexandrebourget" # optional
   googleAnalyticsUserID: "UA-12745853-1"
 

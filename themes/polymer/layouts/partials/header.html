@@ -1,4 +1,5 @@
 {{ $baseurl := .Site.BaseURL }}
+{{ $lang := .Site.RenderLanguage }}
 <!doctype html>
 <html lang="{{.Site.LanguageCode}}">
 <head>
@@ -9,8 +10,10 @@
   <script src="{{$baseurl}}/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="{{$baseurl}}/technology/technology.html">
   <link rel="import" href="{{$baseurl}}/bower_components/iron-icons/iron-icons.html">
+  <link rel="import" href="{{$baseurl}}/bower_components/iron-flex-layout/classes/iron-flex-layout.html">
   <link rel="import" href="{{$baseurl}}/bower_components/paper-drawer-panel/paper-drawer-panel.html">
   <link rel="import" href="{{$baseurl}}/bower_components/paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="{{$baseurl}}/bower_components/paper-button/paper-button.html">
   <link rel="import" href="{{$baseurl}}/bower_components/paper-toolbar/paper-toolbar.html">
   <link rel="import" href="{{$baseurl}}/bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html">
   <link rel="import" href="{{$baseurl}}/bower_components/paper-fab/paper-fab.html">
@@ -65,6 +68,12 @@
       height: 256px;
       background-color: transparent;
     }
+    paper-button {
+      padding: 0.7em 1.7em;
+    }
+    .read-more-link {
+      text-align: center;
+    }
     .profile{
       width: 100%;
       padding-bottom: 20px;
@@ -110,18 +119,29 @@
       text-decoration: none !important;
       color: #212121;
     }
+    div.description a {
+      text-decoration: underline;
+    }
     #disqus_thread {
       margin-top: 25px;
     }
     .tags {
-      font-size: 90%;
-      color: #555;
-      text-align: right;
+      color: #888;
+      padding-right: 5px;
+      padding-top: 5px;
+    }
+    p code {
+      font-size: 80%;
+      padding: 2px 5px;
+      border: 1px solid #d0dce4;
+      border-radius: 5px;
+      background: #fafafd;
     }
   </style>
 
 </head>
 <body>
+    <div>SHOW ME: {{ i18n "home_sweet_home" 1 }}</div>
   <paper-drawer-panel id="drawerPanel" responsive-width="1280px">
     <div class="nav scroll" drawer>
     {{if .Site.Params.profile}}
@@ -132,15 +152,15 @@
           <div class="author">{{.Site.Params.author}}</div>
       </iron-image>
       <paper-menu>
-        <a href="{{$baseurl}}"><paper-item>
-          <iron-icon icon="home"></iron-icon>　<div class="flex">Home</div>
+        <a href="{{$baseurl}}/{{$lang}}"><paper-item>
+          <iron-icon icon="home"></iron-icon>　<div class="flex">{{ i18n "home" }}</div>
           <iron-icon icon="chevron-right"></iron-icon>
         </paper-item></a>
-        <!-- a href="{{$baseurl}}/categories/"><paper-item>
+        <!-- a href="{{$baseurl}}/{{ $lang }}/categories/"><paper-item>
           <iron-icon icon="drafts"></iron-icon>　<div class="flex">Categories</div>
           <iron-icon icon="chevron-right"></iron-icon>
         </paper-item></a-->
-        <a href="{{$baseurl}}/tags/"><paper-item>
+        <a href="{{$baseurl}}/{{ $lang }}/tags/"><paper-item>
           <iron-icon icon="loyalty"></iron-icon>　<div class="flex">Tags</div>
           <iron-icon icon="chevron-right"></iron-icon>
         </paper-item></a>
@@ -169,6 +189,29 @@
         {{with .Site.Params.github}}
           <a href="https://github.com/{{ . }}"><paper-icon-button src="{{$baseurl}}/images/github2-dreamstale35.png"></paper-icon-button></a>
         {{end}}
-          <a href="{{$baseurl}}/index.xml"><paper-icon-button src="{{$baseurl}}/images/feed-dreamstale27.png"></paper-icon-button></a>
+          <a href="{{$baseurl}}/{{$lang}}/index.xml"><paper-icon-button src="{{$baseurl}}/images/feed-dreamstale27.png"></paper-icon-button></a>
+
+
+        {{if .Site.Multilingual}}
+          {{if .IsPage}}
+            {{ range $txLang := .Site.LinkLanguages }}
+              {{if ne $lang $txLang}}
+                {{if isset $.Translations $txLang}}
+                  <a href="{{ (index $.Translations $txLang).Permalink }}">{{ index $.Site.Data.i18n "langlinks" $txLang }}</a>
+                {{else}}
+                  <a href="/{{$txLang}}">{{ index $.Site.Data.i18n "langlinks" $txLang }}</a>
+                {{end}}
+              {{end}}
+            {{end}}
+          {{end}}
+
+          {{if .IsNode}}
+            {{ range $txLang := .Site.LinkLanguages }}
+              {{if ne $lang $txLang}}
+                <a href="/{{$txLang}}">{{ index $.Site.Data.i18n "langlinks" $txLang }}</a>
+              {{end}}
+            {{end}}
+          {{end}}
+        {{end}}
 
       </paper-toolbar>

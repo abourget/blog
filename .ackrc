@@ -1,0 +1,2 @@
+--ignore-directory=is:public
+--ignore-directory=is:bower_components
