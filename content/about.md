@@ -16,3 +16,5 @@ I'm the father of 5 beautiful children and live on the South Shore of
 Montreal, Canada.
 
 I currently work at Intel Security as a Data Scientist.
+
+<!--more-->
