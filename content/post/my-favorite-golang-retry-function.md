@@ -31,21 +31,18 @@ func retry(attempts int, callback func() error) (err error) {
 Use like this:
 
 ```
-		var valuableContent []byte
+		var signedContent []byte
 		err := retry(5, func() error {
-            var err error
-			valuableContent, err = signFile(unsignedFile, contents)
-			if err != nil {
-				return err
-			}
-			return nil
+			var err error
+			signedContent, err = signFile(unsignedFile, contents)
+			return err
 		})
 		if err != nil {
+			log.Println(err)
 			http.Error(w, err.Error(), 500)
 			return
 		}
-
-```
+o```
 
 I've seen some frameworks and libs to do that.. like
 [retry-go](https://github.com/giantswarm/retry-go) and
@@ -55,7 +52,5 @@ a bit overkill for most simple tasks.
 I feel it's such a simple function that you'd rather dump in the
 project that needs it, tweak the delays and the logging mechanisms,
 and be done.
-
-I license this to your under the MIT license.
 
 <!--more-->
