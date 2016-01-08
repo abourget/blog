@@ -2,17 +2,13 @@
 {{ $lang := .Site.RenderLanguage }}
 
 
+<div class="date_badge">
+  <div class="date_day">{{ .Date.Format "2" }}</div>
+  <div class="date_month">{{ .Date.Format "Jan." }}</div>
+  <div class="date_year">{{ .Date.Format "2006" }}</div>
+</div>
 <div style="float: right;">
-  {{if .Params.categories }}
-    <div class="categories">
-      {{ range $index, $category := .Params.categories }}
-        <a href="{{$baseurl}}/{{$lang}}/categories/{{ $category | urlize }}/">{{ $category }}</a>
-      {{ end }}
-    </div>
-  {{end}}
-
   <div class="tags">
-    {{ .Date.Format "2 Jan 2006" }}
     {{if .Params.tags }}
       {{ range $index, $tag := .Params.tags }}
         <a href="{{$baseurl}}/{{$lang}}/tags/{{ $tag | urlize }}/">#{{ $tag }}</a>

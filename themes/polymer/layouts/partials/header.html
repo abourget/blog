@@ -22,132 +22,154 @@
   <link rel="import" href="{{$baseurl}}/bower_components/iron-image/iron-image.html">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/monokai-sublime.min.css">
   <style is="custom-style">
-    body {
-      font-family: 'Roboto', sans-serif;
-    }
-    .nav {
-      background-color: var(--paper-grey-50, #eee);
-    }
-    {{if .Site.Params.cover}}
-    paper-scroll-header-panel {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background-color: var(--paper-grey-50, #eee);
-      /* background for toolbar when it is at its full size */
-      --paper-scroll-header-panel-full-header: {
-        background-image: url({{$baseurl}}/{{.Site.Params.cover}});
-      };
-      /* background for toolbar when it is condensed */
-      --paper-scroll-header-panel-condensed-header: {
-        background-image: url({{$baseurl}}/{{.Site.Params.cover}});
-      };
-    }
-    {{else}}
-    paper-scroll-header-panel {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background-color: var(--paper-grey-200, #eee);
-      /* background for toolbar when it is at its full size */
-      --paper-scroll-header-panel-full-header: {
-        background-image: url({{$baseurl}}/images/cover.png);
-      };
-      /* background for toolbar when it is condensed */
-      --paper-scroll-header-panel-condensed-header: {
-        background-image: url({{$baseurl}}/images/cover.png);
-      };
-    }
-    {{end}}
-    paper-toolbar {
-      /* custom toolbar height */
-      height: 256px;
-      background-color: transparent;
-    }
-    paper-button {
-      padding: 0.7em 1.7em;
-    }
-    .read-more-link {
-      text-align: center;
-    }
-    .profile{
-      width: 100%;
-      padding-bottom: 20px;
-    }
-    .photo{
-      margin: 20px 50px;
-      display: inline-block;
-      height: 64px; width: 64px;
-      border-radius: 50%;
-    }
-    .article{
-      border: 1px solid #bebebe;
-      padding: 16px;
-      margin: 16px;
-      border-radius: 5px;
-      background-color: #fff;
-    }
-    .article .title {
-      font-size: 30px;
-      line-height: 42px;
-      padding: 8px 0 16px;
-    }
-    paper-toolbar .title {
-      font-size: 34px;
-      margin-left: 12px;
-      padding: 8px 0 16px 36px;
-    }
-    .content {
-      max-width: 1012px;
-      margin: 0 auto;
-    }
-    .description{
-      font-size: 16px;
-      padding-bottom: 8px;
-    }
-    .author{
-      font-size: 16px;
-      padding-left: 20px;
-      color: white;
-      margin-top: 150px;
-    }
-    .design{
-      font-size: 14px;
-    }
-    .copyright{
-      font-size: 16px;
-    }
-    paper-menu a {
-      text-decoration: none !important;
-      color: #212121;
-    }
-    div.description a {
-      text-decoration: underline;
-    }
-    #disqus_thread {
-      margin-top: 25px;
-    }
-    .tags {
-      color: #888;
-      padding-right: 5px;
-      padding-top: 5px;
-    }
-    p code {
-      font-size: 80%;
-      padding: 2px 5px;
-      border: 1px solid #d0dce4;
-      border-radius: 5px;
-      background: #fafafd;
-    }
+   body {
+       font-family: 'Roboto', sans-serif;
+   }
+   .nav {
+       background-color: var(--paper-white, white);
+   }
+   {{if .Site.Params.cover}}
+   paper-scroll-header-panel {
+       position: absolute;
+       top: 0;
+       right: 0;
+       bottom: 0;
+       left: 0;
+       background-color: var(--paper-grey-50, #eee);
+       /* background for toolbar when it is at its full size */
+       --paper-scroll-header-panel-full-header: {
+           background-image: url({{$baseurl}}/{{.Site.Params.cover}});
+       };
+       /* background for toolbar when it is condensed */
+       --paper-scroll-header-panel-condensed-header: {
+           background-image: url({{$baseurl}}/{{.Site.Params.cover}});
+       };
+   }
+   {{else}}
+   paper-scroll-header-panel {
+       position: absolute;
+       top: 0;
+       right: 0;
+       bottom: 0;
+       left: 0;
+       background-color: var(--paper-grey-200, #eee);
+       /* background for toolbar when it is at its full size */
+       --paper-scroll-header-panel-full-header: {
+           background-image: url({{$baseurl}}/images/cover.png);
+       };
+       /* background for toolbar when it is condensed */
+       --paper-scroll-header-panel-condensed-header: {
+           background-image: url({{$baseurl}}/images/cover.png);
+       };
+   }
+   {{end}}
+   paper-toolbar {
+       /* custom toolbar height */
+       height: 256px;
+       background-color: transparent;
+   }
+   paper-button {
+       padding: 0.7em 1.7em;
+   }
+   .read-more-link {
+       text-align: center;
+   }
+   .profile{
+       width: 100%;
+       padding-bottom: 20px;
+   }
+   .photo{
+       margin: 20px 50px;
+       display: inline-block;
+       height: 64px; width: 64px;
+       border-radius: 50%;
+   }
+   .article{
+       border: 1px solid #bebebe;
+       padding: 16px 16px 16px 48px;
+       margin: 16px 16px 16px 48px;
+       border-radius: 5px;
+       background-color: #fff;
+       position: relative;
+   }
+   .article .title {
+       font-size: 30px;
+       line-height: 42px;
+       padding: 8px 0 16px;
+   }
+   .date_badge {
+       position: absolute;
+       left: -38px;
+       top: 50px;
+       background: #484848;
+       color: white;
+       width: 50px;
+       padding: 11px 6px 14px;
+       text-align: center;
+   }
+   .date_day {
+       font-weight: bold;
+       font-size: 140%;
+   }
+   .date_month {
+       font-size: 80%;
+       padding: 4px 0 7px;
+   }
+   .date_year {
+       font-size: 60%;
+   }
+   paper-toolbar .title {
+       font-size: 34px;
+       margin-left: 12px;
+       padding: 8px 0 16px 36px;
+   }
+   .content {
+       max-width: 1012px;
+       margin: 0 auto;
+   }
+   .description{
+       font-size: 16px;
+       padding-bottom: 8px;
+   }
+   .author{
+       font-size: 16px;
+       padding-left: 20px;
+       color: white;
+       margin-top: 150px;
+   }
+   .design{
+       font-size: 14px;
+   }
+   .copyright{
+       font-size: 16px;
+   }
+   paper-menu a {
+       text-decoration: none !important;
+       color: #212121;
+   }
+   div.description a {
+       text-decoration: underline;
+   }
+   #disqus_thread {
+       margin-top: 25px;
+   }
+   .tags {
+       color: #888;
+       padding-right: 5px;
+       padding-top: 5px;
+   }
+   p code {
+       font-size: 80%;
+       padding: 2px 5px;
+       border: 1px solid #d0dce4;
+       border-radius: 5px;
+       background: #fafafd;
+   }
   </style>
 
 </head>
 <body>
-    <div>SHOW ME: {{ i18n "home_sweet_home" 1 }}</div>
+    <div>{{ i18n "home_sweet_home" 1 }}</div>
   <paper-drawer-panel id="drawerPanel" responsive-width="1280px">
     <div class="nav scroll" drawer>
     {{if .Site.Params.profile}}

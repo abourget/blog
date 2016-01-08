@@ -2,7 +2,7 @@
 Tags:
  - golang
 date: 2016-01-04T14:44:18-05:00
-title: My favorite Golang retry function
+title: "My favorite #golang retry function"
 
 ---
 
@@ -42,7 +42,7 @@ Use like this:
 			http.Error(w, err.Error(), 500)
 			return
 		}
-o```
+```
 
 I've seen some frameworks and libs to do that.. like
 [retry-go](https://github.com/giantswarm/retry-go) and
@@ -51,6 +51,6 @@ a bit overkill for most simple tasks.
 
 I feel it's such a simple function that you'd rather dump in the
 project that needs it, tweak the delays and the logging mechanisms,
-and be done.
+and be done with it.
 
 <!--more-->
