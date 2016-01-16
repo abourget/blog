@@ -14,6 +14,6 @@ J'aime jouer au devops aussi.
 Je suis l'heureux père de 5 magnifiques enfants, et j'habite sur la
 Rive-Sud de Montréal, au Canada.
 
-Je travaille présentement chez Intel Seécurité comme _Data Scientist_.
+Je travaille présentement chez Intel Sécurité comme _Data Scientist_.
 
 <!--more-->
