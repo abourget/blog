@@ -168,7 +168,7 @@ to javascript through GopherJS and runs fine in the browser.  You most
 probably will never run code like that in production however,
 hopefully :)
 
-### Generating SVG
+#### Generating SVG
 
 [This article](http://www.gopherjs.org/blog/2014/10/29/svgo/) shows
 how to use the Go library [SVGo](https://github.com/ajstarks/svgo) in
@@ -201,7 +201,18 @@ to run such code many other places.
 Continue on...
 
 
-### GopherJS Conclusion
+<!--
+
+Would we try this one too ?
+
+#### Image manipulations
+
+https://github.com/nfnt/resize
+
+-->
+
+
+#### GopherJS Conclusion
 
 GopherJS led to the creation of a Web/Desktop/Mobile gaming engine
 called [Enj](http://ajhager.com/enj/) continued as
@@ -222,8 +233,10 @@ just be the future of the web.  Read more about
 
 
 
-Gopy
-----
+## Python
+
+### gopy
+
 
 https://github.com/go-python/gopy
 
@@ -232,6 +245,12 @@ Build your binaries before, or after
 Intro to building .so files
 
   https://blog.filippo.io/building-python-modules-with-go-1-5/
+
+
+### go-python
+
+Python bridges also include https://github.com/sbinet/go-python : Go
+bindings to call into the CPython 2 C-level API.
 
 
 Ruby FFI
@@ -243,6 +262,20 @@ would that make sense ?
 
   Build for many platforms..  demo under Windows (through wine)
 
+[Check: https://github.com/mitchellh/go-mruby]
+
+
+Lua VM
+------
+
+https://github.com/Shopify/go-lua
+https://github.com/yuin/gopher-lua
+
+
+
+Write your dynamic/scripting language in Go, and you immediately gain
+embeddability and cross-platform portability ! How fantastic!
+
 
 Go Mobile
 ---------
@@ -250,3 +283,19 @@ Go Mobile
 https://github.com/golang/mobile
 
 http://www.sajalkayan.com/post/go-android-binary.html?
+
+
+Other oddities
+--------------
+
+campher: Perl bindings for Go, by Brad Fitzpatrick: https://github.com/bradfitz/campher
+llgo: LLVM front-end for Go, in Go: http://llvm.org/svn/llvm-project/llgo/trunk/README.TXT
+
+Attempts at interactive Go REPLs:
+[gore](https://github.com/motemen/gore),
+[gosh](https://github.com/mkouhei/gosh) and
+[go-fish](https://github.com/rocky/go-fish). Attempts at a Go
+scripting language interpreter: [igo](https://github.com/sbinet/igo) and
+[go-eval](https://github.com/sbinet/go-eval).
+
+<-- maybe a quick demo of `gore`? too off-topic ? -->
