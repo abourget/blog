@@ -41,22 +41,21 @@ New configuration options
 Here are the new config options you can put in your `config`:
 
 ```
-Multilingual: true
-RenderLanguage: en
-DefaultContentLang: en
-LinkLanguages:
- - en
- - fr
+Multilingual:
+  en:
+    weight: 1
+    other: key1
+  fr:
+    weight: 2
+    other: key2
+
+DefaultContentLanguage: en
 ```
 
 `Multilingual` means you enable the Multilingual mode of Hugo.  It will now render everything
 under `/en` for English material.
 
-`RenderLanguage` is the key you change between `config.en.yaml` and `config.fr.yaml`. It
-determines which language this run is going to render. You will need to run `hugo` twice
-(well, once for each language you want to support).
-
-`LinkLanguages` lists all the languages you want to render links to.  This is to help
+`Languages` lists all the languages you want to render links to.  This is to help
 you out in the templates.  See below.
 
 `DefaultContentLang` simply means that if you have `post/welcome.md`, it will assume
@@ -77,14 +76,14 @@ You can implement a language switcher like this:
     {{if eq $lang "fr"}}
       {{with $en}}<a href="{{$en.Permalink}}">English</a>{{end}}
     {{else if eq $lang "en"}}
-      {{with $fr}}<a href="{{$fr.Permalink}}">Francais</a>{{end}}
+      {{with $fr}}<a href="{{$fr.Permalink}}">Français</a>{{end}}
     {{end}}
   {{end}}
   {{if .IsNode}}
     {{if eq $lang "fr"}}
       <a href="/en">English</a>
     {{else if eq $lang "en"}}
-      <a href="/fr">Francais</a>
+      <a href="/fr">Français</a>
     {{end}}
   {{end}}
 {{end}}

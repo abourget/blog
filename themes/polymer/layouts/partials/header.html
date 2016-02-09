@@ -1,5 +1,5 @@
 {{ $baseurl := .Site.BaseURL }}
-{{ $lang := .Site.RenderLanguage }}
+{{ $lang := .Site.CurrentLanguage }}
 <!doctype html>
 <html lang="{{.Site.LanguageCode}}">
 <head>
@@ -238,21 +238,21 @@
 
         {{if .Site.Multilingual}}
           {{if .IsPage}}
-            {{ range $txLang := .Site.LinkLanguages }}
+            {{ range $txLang := .Site.Languages }}
               {{if ne $lang $txLang}}
                 {{if isset $.Translations $txLang}}
-                  <a href="{{ (index $.Translations $txLang).Permalink }}">{{ index $.Site.Data.i18n "langlinks" $txLang }}</a>
+                  <a href="{{ (index $.Translations $txLang).Permalink }}">{{ i18n ( sprintf "language_switcher_%s" $txLang ) }}</a>
                 {{else}}
-                  <a href="/{{$txLang}}">{{ index $.Site.Data.i18n "langlinks" $txLang }}</a>
+                  <a href="/{{$txLang}}">{{ i18n ( sprintf "language_switcher_%s" $txLang ) }}</a>
                 {{end}}
               {{end}}
             {{end}}
           {{end}}
 
           {{if .IsNode}}
-            {{ range $txLang := .Site.LinkLanguages }}
+            {{ range $txLang := .Site.Languages }}
               {{if ne $lang $txLang}}
-                <a href="/{{$txLang}}">{{ index $.Site.Data.i18n "langlinks" $txLang }}</a>
+                <a href="/{{$txLang}}">{{ i18n ( sprintf "language_switcher_%s" $txLang ) }}</a>
               {{end}}
             {{end}}
           {{end}}

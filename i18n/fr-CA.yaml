@@ -2,6 +2,3 @@
   translation: "English"
 - id: language_switcher_fr
   translation: "Français"
-
-- id: home
-  translation: "Home"

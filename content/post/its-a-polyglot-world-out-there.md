@@ -6,9 +6,9 @@ Tags:
 date: 2016-01-14T11:04:24-05:00
 draft: true
 title: It's a polyglot world out there!
-alternate_title: Go in a polyglot world: bridges to other languages and platforms
-alternate_title: In a polyglot world: Go bridges to other languages and platforms
-alternate_title: Overview of Go bridges to other languages and platforms
+#alternate_title: Go in a polyglot world: bridges to other languages and platforms
+#alternate_title: In a polyglot world: Go bridges to other languages and platforms
+#alternate_title: Overview of Go bridges to other languages and platforms
 
 ---
 
