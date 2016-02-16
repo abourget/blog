@@ -253,16 +253,147 @@ Python bridges also include https://github.com/sbinet/go-python : Go
 bindings to call into the CPython 2 C-level API.
 
 
-Ruby FFI
---------
+Ruby FFI and c-shared build mode
+-----------------------------
 
-https://c7.se/go-and-ruby-ffi/
+[ffi](https://github.com/ffi/ffi/) is [Foreign Function
+Interface](https://en.wikipedia.org/wiki/Foreign_function_interface)
+for Ruby.  It allows you to write native code, in some other language,
+and to/from it from Ruby.
 
-would that make sense ?
+Today we're interested in Go, so let's use the `ffi` gem to call
+to/from Go
 
-  Build for many platforms..  demo under Windows (through wine)
+<!-- https://c7.se/go-and-ruby-ffi/ -->
 
-[Check: https://github.com/mitchellh/go-mruby]
+First, we install the `ffi` gem:
+
+    gem install ffi
+
+    # On Linux, you might need `ruby1.9.1-dev` or `ruby2.0-dev` installed
+
+Now let's define `libsum.go` (ripped from https://c7.se/go-and-ruby-ffi/):
+
+    package main
+
+    import "C"
+
+    //export add
+    func add(a, b int) int {
+    	return a + b
+    }
+
+    func main() {}
+
+we'll build it with:
+
+    go build -buildmode=c-shared -o libsum.so libsum.go
+
+and we'll create a `sum.rb` file with:
+
+    require 'ffi'
+
+    module Sum
+      extend FFI::Library
+      ffi_lib './libsum.so'
+      attach_function :add, [:int, :int], :int
+    end
+
+    puts Sum.add(15, 27)
+
+Let's try to run it with `ruby` now:
+
+    ruby sum.rb
+
+Now notice there is a SEGFAULT there, It seems there's an issue,
+either with FFI or with my system configuration. YMMV.
+
+Now let's add a twist.  What if we could interpret ruby code directly
+in Go, like we did in JS ?
+
+The `grubby` folks made a Ruby interpreter, in native Go.  Bear with
+me here though, it's pretty rough!
+
+Get it:
+
+    go get github.com/grubby/grubby
+
+Let's add a function to our ruby code, and then call it through FFI:
+
+    module Sum
+      extend FFI::Library
+      ffi_lib './libsum.so'
+      attach_function :add, [:int, :int], :int
+      attach_function :runCode, [:string], :string
+    end
+
+    puts Sum.runCode(<<-DOC
+
+    require 'fileutils'
+
+    puts "This runs inside grubby and adds stuff:", 5 + 7
+
+    return FileUtils.pwd()
+
+    DOC
+    )
+
+Add something like this to `libsum.go`:
+
+    //export runCode
+    func runCode(codePtr *C.char) string {
+    	code := C.GoString(codePtr)
+
+    	vm := vm.NewVM(os.Getenv("GOPATH")+"/src/github.com/grubby/grubby", "my VM")
+    	defer vm.Exit()
+
+    	//fmt.Printf("Running code: %s\n", code)
+    	res, err := vm.Run(code)
+    	if err != nil {
+    		return fmt.Sprintf("error: %s", err)
+    	}
+
+    	if res != nil {
+    		fmt.Println("Class:", res.Class().Name())
+    		fmt.Println("Result:", res.String())
+    		return res.String()
+    	}
+
+    	return "done"
+    }
+
+You'll need to symlink the `grubby` path to `~/.grubby` for the `lib`
+content to load through `require` calls:
+
+    ln -s $GOPATH/src/github.com/grubby/grubby ~/.grubby
+
+and let's rebuild and run the `sum.rb` file again:
+
+    go build -buildmode=c-shared -o libsum.so libsum.go && ruby sum.rb
+
+And we'll see:
+
+    This runs inside grubby and adds stuff:
+    12
+    Class: String
+    Result: /home/abourget/go/src/github.com/abourget/polyglot/ffi
+    /home/abourget/go/src/github.com/abourget/polyglot/ffi
+    We're done
+
+You do need to know that `grubby` is *very* experimental, however the
+FFI stuff should be very useable using Cgo bindings.
+
+#### Other ways
+
+There are (at least) two other ways to interact with Ruby from/to Go:
+
+* The first, https://github.com/DavidHuie/quartz, involves running a
+  separate process and communicating through an RPC protocol.
+
+* The second, is a binding to `mruby` in Go, by none other than
+  HashiCorp's founder, Mitchell Hashimoto (of Vagrant fame). Check it
+  here: https://github.com/mitchellh/go-mruby
+
 
 
 Lua VM
