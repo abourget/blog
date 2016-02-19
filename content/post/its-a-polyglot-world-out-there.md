@@ -12,6 +12,21 @@ title: It's a polyglot world out there!
 
 ---
 
+<!--
+Preparation for the talk:
+* Clear browser history
+  * Visit all links in this page, to have quick reference with completion in Chrome
+* Change Emacs font size and background color
+* Change Terminal font size and background color
+* Dry run with a screen size of 1024x768 or something...
+* Clean the Desktop
+* Temporarily change the background image of my desktop
+
+TODO:
+ * add yasnippet for `alert` in GopherJS land
+ * add a `poof` yasnippet for `if err != nil { log.Fatalln("Msg", err) }` block.
+-->
+
 This is the outline of a talk to be given at Golang Montréal.
 
 The world of programming is full of languages, and knowing more than one is often required.
@@ -56,13 +71,44 @@ our program.  Write `otto.go` somewhere:
 ```
 package main
 
+import (...)
+
 func main() {
 	vm := otto.New()
-    vm.Run(`
-
+	vm.Set("val1", 123)
+	vm.Set("val2", 234)
+    _, err := vm.Run(`
+ret = val1 + val2;
     `)
+	if err != nil {
+		log.Fatalln("Error running VM:", err)
+	}
+
+	ret, err := vm.Get("ret")
+	val3, err := ret.ToInteger()
+	if err != nil {
+		log.Fatalln("Can't convert to Integer:", err)
+	}
+
+	fmt.Println("Result:", val3)
 }
 ```
+
+and run it with:
+
+    go run otto.go
+
+And you should see:
+
+    Result: 357
+
+It seems slow because `go run` compiles and runs, so you can try:
+
+    go build -v .
+    time ./otto
+
+And there you for embedded JS !
+
 
 
 ### GopherJS
@@ -121,8 +167,9 @@ http://localhost:8080/github.com/abourget/polyglot/gopherjs/
 
 You'll see that the request succeeds !
 
-Uncomment the `example.com` line, and see the proper `Sprintf` call is
-being done, with all formatting. That's the standard Go library.
+Uncomment the `...Get("...example.com/")` line, and see the proper
+`Sprintf` call is being done, with all formatting. That's the standard
+Go library.
 
 Let's try to unmarshal the JSON with static typing in javascript:
 
@@ -183,8 +230,8 @@ func genSVG() {
 
     canvas := svg.New(&output)
     canvas.Start(250, 250)
-    canvas.Circle(125, 125, 100, "fill:#28262C;stroke:#5BA642;stroke-width:5px")
-    canvas.Text(125, 135, "GopherJS!", "text-anchor:middle;font-size:36px;fill:#EB5633")
+    canvas.Circle(125, 125, 100, "fill:#28262C; stroke:#5BA642; stroke-width:5px")
+    canvas.Text(125, 135, "GopherJS!", "text-anchor:middle; font-size:36px; fill:#EB5633")
     canvas.End()
 
     time.Sleep(1 * time.Second)
@@ -228,33 +275,181 @@ so you can write nice Go code and JS is called via the GopherJS API. I
 find it hilarious.
 
 Some might think it's stupidity, but I think they're wrong.  It might
-just be the future of the web.  Read more about
-[WebAssembly here](https://medium.com/javascript-scene/what-is-webassembly-the-dawn-of-a-new-era-61256ec5a8f6).
+just be the future of the web.  Read more about [WebAssembly
+here](https://medium.com/javascript-scene/what-is-webassembly-the-dawn-of-a-new-era-61256ec5a8f6).
 
+Last note, is about
+[cmd-go-js](https://github.com/gophergala2016/cmd-go-js) which is a
+"feature branch" of the `go` command, that supports GopherJS as an
+additional `GOARCH=js`.
 
 
 ## Python
 
 ### gopy
 
+[gopy](https://github.com/go-python/gopy) is a deceptively simply way
+to write Go code and load it in Python.
 
-https://github.com/go-python/gopy
+Let's first install:
 
-Build your binaries before, or after
+    go get -v github.com/go-python/gopy
 
-Intro to building .so files
+Let's try it out by writing some code in `ext.go`, in a clean directory:
 
-  https://blog.filippo.io/building-python-modules-with-go-1-5/
+```
+package ext
+
+type User struct {
+	Username string
+	Fullname string
+	Password string
+}
+```
+
+We'll add the `SetPassword(password string)` method that will use a
+really powerful Go encryption that we'll
+[take from here](http://www.dotnetperls.com/rot13-go).  I just love
+that algorithm, because using this very method, `cat` get encrypted to
+`png` !
+
+```
+func (u *User) SetPassword(input string) {
+	u.Password = strings.Map(rot13, input)
+}
+```
+
+Don't forget the content of the `rot13` function below
+`SetPassword()`.
+
+Soon, you,ll be able to use it from Python !
+
+Run:
+
+    $ gopy bind .
+
+This generates a `.so` file that we can load directly with Python's
+`import ext`:
+
+    $ python
+    >>> import ext
+    >>> u1 = ext.User()
+    >>> u1.Fullname = "My name"
+    >>> u1.Fullname
+    'My name'
+    >>> u1.SetPassword("this is a very secretive password and cat")
+    >>> u1.Password
+    'guvf vf n irel frpergvir cnffjbeq naq png'
+
+See ? `png`? I just love it.
 
 
-### go-python
+#### Breaking the GIL
+
+That's all cool, but I can easily implement `rot13` in Python ! What's
+the use ?
+
+And I'd have to agree with you.
+
+So let's try an example that makes Go shine: concurrency and
+multi-core use -- breaking the dreaded Global Interpreter Lock !
+
+Add to your `ext.go` such a thing:
+
+```
+func MaxOutResources() func() {
+	done := make(chan struct {})
+
+	f := func() {
+		for {
+			input := "cat"
+			for i := 0; i < 100000; i++ {
+				input = strings.Map(rot13, input)
+			}
+
+			select {
+			case <-done:
+				fmt.Println("ffiieeeww!", input)
+				return
+			default:
+			}
+		}
+	}
+
+	go f()
+	go f()
+	go f()
+	go f()
+
+	return func() {
+		close(done)
+	}
+}
+```
+
+This function will spin 4 goroutines, in parallel of the Python
+process, doing incredible calculations, and allows the caller to shut
+down the operations, tapping into the sweet Go concurrency system.
+
+Now rebuilding and running through python would look like:
+
+    $ gopy bind .
+    $ python
+    >>> import ext
+    >>> f = ext.MaxOutResources()
+    >>>
+
+Now watch your CPU max out _all your cores_ !
+
+Call `f()` and you're done:
+
+```
+    >>> f()
+    ffiieeeww! cat
+    ffiieeeww! cat
+    ffiieeeww! cat
+    ffiieeeww! cat
+```
+
+Now you know what 100000 iterations of ROT13 does to your passwords.
+
+
+#### Dynamically build and load
+
+There is a small python wrapper script around this in
+`$GOPATH/src/github.com/go-python/gopy/gopy.py` that you can copy to
+our work dir and run with something like:
+
+    python
+    >>> import gopy
+    >>> ext = gopy.load("github.com/abourget/polyglot/py")
+    >>> u1 = ext.User()
+    >>> u1.SetPassword("very secure password")
+    etc...
+
+This internally runs the `gopy bind` calls and imports it in Python
+directly.
+
+
+#### Conclusion
+
+Now mind you, `gopy` is nowhere near perfect.  There are cases where
+it will plainly crash, but there is a case for running Go code within
+your Python program, for performance or reusability.
+
+
+#### Additional readings...
+
+[This post](https://blog.filippo.io/building-python-modules-with-go-1-5/)
+is a great starter on the internals of building Go-based python extensions.
 
 Python bridges also include https://github.com/sbinet/go-python : Go
 bindings to call into the CPython 2 C-level API.
 
 
+
 Ruby FFI and c-shared build mode
------------------------------
+--------------------------------
 
 [ffi](https://github.com/ffi/ffi/) is [Foreign Function
 Interface](https://en.wikipedia.org/wiki/Foreign_function_interface)
@@ -413,7 +608,7 @@ Go Mobile
 
 https://github.com/golang/mobile
 
-http://www.sajalkayan.com/post/go-android-binary.html?
+http://www.sajalkayan.com/post/go-android-binary.html
 
 
 Other oddities
