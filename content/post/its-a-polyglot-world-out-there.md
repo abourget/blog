@@ -27,16 +27,17 @@ TODO:
  * add a `poof` yasnippet for `if err != nil { log.Fatalln("Msg", err) }` block.
 -->
 
-This is the outline of a talk to be given at Golang Montréal.
+> This is the contents of a talk given at Golang Montréal
+> [meetup on February 22nd 2016](https://golangmontreal.org/en/events/gomtl-01-go-16-release-party-feb-22nd/),
+> at Google Montréal.
 
-The world of programming is full of languages, and knowing more than one is often required.
-
-This is why today, I'm going to talk about Go, but interact with as many languages as possible.
-
+This is a high level introduction to different bridges that exist
+between Go and other languages.  It is not meant to be exhaustive nor
+does it go very deep in each subject, but I hope it is at least
+entertaining.
 
 
 ## Javascript
-
 
 ### Otto
 
@@ -295,7 +296,11 @@ Let's first install:
 
     go get -v github.com/go-python/gopy
 
-Let's try it out by writing some code in `ext.go`, in a clean directory:
+Let's try it out by writing some code in `user.go`, in a clean directory:
+
+    mkdir -p $GOPATH/src/github.com/abourget/polyglot/ext; cd !$
+
+then in `lib.go`:
 
 ```
 package ext
@@ -346,15 +351,23 @@ See ? `png`? I just love it.
 
 #### Breaking the GIL
 
-That's all cool, but I can easily implement `rot13` in Python ! What's
-the use ?
+That's all cool, but we already have a `rot13` implementation in
+Python! What's the use ?
 
-And I'd have to agree with you.
+Let's try it in Python:
+
+    $ python
+    >>> import codecs
+    >>> import thread
+    >>> thread.start_new_thread(lambda: [codecs.encode("have a cat", "rot_13") for x in xrange(10000000)])
+
+and watch out your CPUs.  Welcome to the GIL: you can't have more than
+one core run Python code.
 
 So let's try an example that makes Go shine: concurrency and
 multi-core use -- breaking the dreaded Global Interpreter Lock !
 
-Add to your `ext.go` such a thing:
+Add to a new `maximus.go` such a thing:
 
 ```
 func MaxOutResources() func() {
@@ -401,7 +414,7 @@ Now rebuilding and running through python would look like:
 
 Now watch your CPU max out _all your cores_ !
 
-Call `f()` and you're done:
+Call `f()` to stop everything:
 
 ```
     >>> f()
@@ -448,8 +461,7 @@ bindings to call into the CPython 2 C-level API.
 
 
 
-Ruby FFI and c-shared build mode
---------------------------------
+## Ruby FFI and c-shared build mode
 
 [ffi](https://github.com/ffi/ffi/) is [Foreign Function
 Interface](https://en.wikipedia.org/wiki/Foreign_function_interface)
@@ -501,17 +513,21 @@ Let's try to run it with `ruby` now:
     ruby sum.rb
 
 Now notice there is a SEGFAULT there, It seems there's an issue,
-either with FFI or with my system configuration. YMMV.
+either with FFI or with my system configuration. I've reported the
+issue, but YMMV.
 
 Now let's add a twist.  What if we could interpret ruby code directly
-in Go, like we did in JS ?
+in Go, like we did with Javascript ?
 
 The `grubby` folks made a Ruby interpreter, in native Go.  Bear with
-me here though, it's pretty rough!
+me here though, **it's pretty rough!**.
 
 Get it:
 
     go get github.com/grubby/grubby
+
+It comes with programs that replace `irb` and `ruby` with grubby's
+implementation. Find it under `main/irb` and `main/ruby`.
 
 Let's add a function to our ruby code, and then call it through FFI:
 
@@ -591,28 +607,149 @@ There are (at least) two other ways to interact with Ruby from/to Go:
 
 
 
-Lua VM
-------
+## Go Mobile
 
-https://github.com/Shopify/go-lua
-https://github.com/yuin/gopher-lua
+[Go Mobile](https://github.com/golang/mobile) allows you to write
+libraries for iOS and Android that you can load in their respective
+IDE.  You can also write native application that compile to native
+packages.  The APIs available for the native applications do not
+include any of the GUI stuff at all at this time, except OpenGL that
+works on both platforms.  Do remember that all this is early stage.
+
+Get it with:
+
+    go get -v golang.org/x/mobile/cmd/gomobile
+
+We'll need to install the `gomobile` toolchain for Android:
+
+    gomobile init
+
+I like how most things in Go are one-liners, with almost no output.
+
+Create a new directory and go into it:
+
+    mkdir -p $GOPATH/src/github.com/abourget/polyglot/mobile; cd !$
+
+Let's copy the example app we find at https://godoc.org/golang.org/x/mobile/app into our `main.go` and start from there:
+
+```
+package main
+
+func main() {
+	app.Main(func(a app.App) {
+		for e := range a.Events() {
+			switch e := a.Filter(e).(type) {
+			case lifecycle.Event:
+				// ...
+			case paint.Event:
+				log.Print("Call OpenGL here.")
+				a.Publish()
+			}
+		}
+	})
+}
+```
+
+Now we'll tweak our program slightly to make a POST request when the
+state of the app changes:
+
+```
+			switch e := a.Filter(e).(type) {
+			case lifecycle.Event:
+				_, _ = http.Post(fmt.Sprintf("http://192.168.86.151:8888?from=%s&to=%s", e.From, e.To), "", nil)
+			...
+```
+
+Let's use this simple server to see what we receive (in
+`serve/main.go` or something):
+
+```
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		cnt, _ := httputil.DumpRequest(r, false)
+		os.Stdout.Write(cnt)
+	})
+	fmt.Println("Listening")
+	http.ListenAndServe(":8888", nil)
+}
+```
+
+I'm going to use `genymotion` to simulate an Android device. The goal
+is to have the program injected in the VM as fast as possible.
+
+Let's compile that as an `.apk` and see what happens:
+
+    gomobile install
+
+Boom, it's installed directly to the device. This one will be called
+`Mobile` as its in the `mobile` program package.
+
+Notice in the `adb logcat`, the `log.Print` call being
+displayed. Notice also the state changes. It's very barebone, but
+we've done much with very little until now.
+
+More details can be found on
+[the Go Mobile wiki](https://github.com/golang/go/wiki/Mobile).
+
+
+## Cross-platform cross-compilation
+
+I would have forgotten a major piece if I hadn't touched this last
+subject.
+
+One of Go's major feature is the ability to cross-compile to any
+platform, from any platform.  On Linux, build for Windows, on Windows,
+build for Mac OS X, etc..
+
+And it's the simplicity of it all that makes it the most attractive:
+
+    GOOS=windows GOARCH=386 go build -v .
+
+for a given program.  Then try it through `wine` or look with `file`
+what type of executable you have at hand:
+
+    file program.exe
+    wine program.exe
+
+Go uses _build tags_ to decide whether a file gets included in the
+compilation process or not.
+
+Any filename ending with `_windows.go` will only be compiled under the
+`windows` GOOS target, same with `_darwin.go` or `_linux.go`.
+
+Additionally, you can use
+[build constraints](https://golang.org/pkg/go/build/#hdr-Build_Constraints)
+to specify such tags inside the file. Example:
+
+    // +build !windows
+
+meaning that we want it on all platforms except Windows.
 
 
 
-Write your dynamic/scripting language in Go, and you immediately gain
-embeddability and cross-platform portability ! How fantastic!
+## Lua VM
+
+I was originally going to make a demonstration of the different Go
+implementations of Lua, but at the next meetup, we will have one of
+the main authors of `go-lua` present his work directly.
+
+As a reference:
+
+* https://github.com/Shopify/go-lua
+* https://github.com/yuin/gopher-lua
 
 
-Go Mobile
----------
 
-https://github.com/golang/mobile
+## Conclusions
 
-http://www.sajalkayan.com/post/go-android-binary.html
+Note how when you write your dynamic/scripting language in Go and you
+immediately gain embeddability and cross-platform portability ! How
+fantastic!  This is a challenge to C, where toolchain issues prevent
+true cross-platform portability (at least misses the *easy* part).
 
 
-Other oddities
---------------
+
+### Other oddities
 
 campher: Perl bindings for Go, by Brad Fitzpatrick: https://github.com/bradfitz/campher
 llgo: LLVM front-end for Go, in Go: http://llvm.org/svn/llvm-project/llgo/trunk/README.TXT
@@ -623,5 +760,11 @@ Attempts at interactive Go REPLs:
 [go-fish](https://github.com/rocky/go-fish). Attempts at a Go
 scripting language interpreter: [igo](https://github.com/sbinet/igo) and
 [go-eval](https://github.com/sbinet/go-eval).
+
+
+### About the presentation
+
+Those interested in my `.emacs.d` dir,
+[it is available here](https://github.com/abourget/my.emacs.d).
 
 <-- maybe a quick demo of `gore`? too off-topic ? -->
