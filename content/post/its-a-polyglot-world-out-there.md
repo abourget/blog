@@ -5,7 +5,7 @@ Tags:
  - golang
 date: 2016-01-14T11:04:24-05:00
 draft: true
-title: It's a polyglot world out there!
+title: Go bridges to Javascript and Python
 #alternate_title: Go in a polyglot world: bridges to other languages and platforms
 #alternate_title: In a polyglot world: Go bridges to other languages and platforms
 #alternate_title: Overview of Go bridges to other languages and platforms
@@ -21,21 +21,45 @@ Preparation for the talk:
 * Dry run with a screen size of 1024x768 or something...
 * Clean the Desktop
 * Temporarily change the background image of my desktop
+* Lock preferences: don,t close or lock the screen during presentation.
 
 TODO:
  * add yasnippet for `alert` in GopherJS land
  * add a `poof` yasnippet for `if err != nil { log.Fatalln("Msg", err) }` block.
 -->
 
-> This is the contents of a talk given at Golang Montréal
+
+<!--
+
+
+
+
+     Alexandre Bourget - Data Scientist @ Intel Security
+                      @bourgetalexndre
+
+               Golang Montréal - Feb 22nd 2016
+
+Go bridges to Javascript and Python.
+
+We'll demonstrate Go bridges to Javascript (otto, GopherJS) and Python
+(gopy). Everything in this session will be live coded from scratch.
+
+
+
+
+
+-->
+
+> *This is the content of a talk given at Golang Montréal
 > [meetup on February 22nd 2016](https://golangmontreal.org/en/events/gomtl-01-go-16-release-party-feb-22nd/),
-> at Google Montréal.
+> at Google Montréal.*
 
 This is a high level introduction to different bridges that exist
 between Go and other languages.  It is not meant to be exhaustive nor
 does it go very deep in each subject, but I hope it is at least
 entertaining.
 
+<!--more-->
 
 ## Javascript
 
@@ -48,26 +72,26 @@ confused with [Otto](https://github.com/hashicorp/otto),
 portable way, shipping your single binary with the VM included
 (without Cgo or anything of the sort).
 
-Get it with `go get github.com/robertkrimen/otto/...` and check
+Get it with:
+
+    go get github.com/robertkrimen/otto/...
+
+and check
 [the docs here](https://godoc.org/github.com/robertkrimen/otto). If
 you're interested in the AST parser, check
 [the parser package](http://godoc.org/github.com/robertkrimen/otto/parser)
 
-Let's start by writing some Javascript code and running it through
-`otto`. Drop this in `hello.js`:
+This will also install the `otto` program, so you can run it on the command line like:
 
-```
-var hello = "world";
-var someMath = 1 + 2 + 3;
-console.log("hello", hello, someMath);
-```
-
-and run:
-
-    otto hello.js
+    $ otto
+    var hello = "world";
+    var someMath = 1 + 2 + 3;
+    console.log("Hello", hello, someMath);
+    ^D
+    Hello world 6
 
 This is a simple execution on the command line.  Now let's use it in
-our program.  Write `otto.go` somewhere:
+our program.  Open up `jsvm/main.go` and write:
 
 ```
 package main
@@ -78,12 +102,13 @@ func main() {
 	vm := otto.New()
 	vm.Set("val1", 123)
 	vm.Set("val2", 234)
-    _, err := vm.Run(`
+    out, err := vm.Run(`
 ret = val1 + val2;
     `)
 	if err != nil {
 		log.Fatalln("Error running VM:", err)
 	}
+	log.Println("Out:", out)
 
 	ret, err := vm.Get("ret")
 	val3, err := ret.ToInteger()
@@ -95,20 +120,27 @@ ret = val1 + val2;
 }
 ```
 
-and run it with:
+and run:
 
-    go run otto.go
+    $ cd jsvm
+    $ go run main.go
 
-And you should see:
+And you'll see:
 
     Result: 357
+    [INSERT THE REAL THING]
 
 It seems slow because `go run` compiles and runs, so you can try:
 
     go build -v .
-    time ./otto
+    time ./jsvm
 
-And there you for embedded JS !
+Otto can also pre-compile javascript into a `Script` object, so you
+don't need to reparse it on the next run, thereby increasing
+performance.
+
+There you go: you can run Javascript inside a Go program, and keep
+Go's portability.
 
 
 
@@ -122,9 +154,13 @@ the standard library. You can try things in the
 
 Here we will try it out and show a couple of patterns at work.
 
-Install with `go get -v github.com/gopherjs/gopherjs`, and put in `code.go` somewhere:
+Install the library and program with:
 
-```go
+    go get -v github.com/gopherjs/gopherjs
+
+and open up `gopherjs/code.go` to insert:
+
+```
 package main
 
 // run goimports
@@ -133,11 +169,11 @@ func main() {
 	//resp, err := http.Get("https://example.com")
 	resp, err := http.Get("https://cors-test.appspot.com/test")
 	if err != nil {
-		js.Global.Call("alert", fmt.Sprintf("Failed HTTP query: %s", err))
+        println("Failed HTTP query:", err)
 	}
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		js.Global.Call("alert", "Couldn't read body", err)
+        println("Couldn't read body:", err)
 	}
 
 	println("My output", string(content))
@@ -154,10 +190,11 @@ Notice the `gopherjs.js` file and its accompanying source maps. This
 will allow us to know which line caused errors when debugging. Mapping
 directly to our Go code!
 
-Why is it this big you ask?  It contains the Go runtime, management of
-concurrency, channels, goroutines, chunks of the standard library you
-need to your operations, and your code. It's the same "single-binary"
-distribution you get for other platforms like Mac, Windows or Linux.
+Why is the generated `.js` file this big, you ask?  It contains the Go
+runtime, management of concurrency, channels, goroutines, chunks of
+the standard library you need to your operations, and your code. It's
+the same "single-binary" distribution you get for other platforms like
+Mac, Windows or Linux.
 
 Then run:
 
@@ -165,99 +202,26 @@ Then run:
 
 and navigate to
 http://localhost:8080/github.com/abourget/polyglot/gopherjs/
+... you'll see that the request succeeds !
 
-You'll see that the request succeeds !
 
-Uncomment the `...Get("...example.com/")` line, and see the proper
-`Sprintf` call is being done, with all formatting. That's the standard
-Go library.
+As an example, here's how you'd modify the DOM in Go:
 
-Let's try to unmarshal the JSON with static typing in javascript:
+    gopher := `[insert the content of https://raw.githubusercontent.com/golang-samples/gopher-vector/master/gopher-front.svg here]`
+    js.Global.Get("document").Get("body").Set("innerHTML", gopher)
 
-```
-	var status struct {
-		Status string
-	}
+The last crazy thing we could do is insert the `otto` VM and run javascript... in the browser.
 
-	json.Unmarshal(content, &status)
+Add these to our `main` function:
 
-	println("Success !", status.Status)
-
-```
-
-Add this near the end of the previous function.  That runs the Go JSON
-marshalling magic, happening in your browser with all of its
-reflection glory.
-
-Let's get a bit more crazy and embed `otto` in your browser. Yes, that
-means having an ECMAScript virtual machine, written in pure Go,
-compiled to Javascript, running in the browser, which will run yet
-some more javascript code for your:
-
-```
-func launchVM() {
-	vm := otto.New()
-	val, err := vm.Run(`
-      abc = 2 + 2;
-      console.log("The value of abc is " + abc); // 4
-      return "world";
-    `)
-	if err != nil {
-		println("got an error running the otto VM", err)
-	}
-	println("Got from inside the otto VM:", val)
-}
-```
-
-and call that from your `main()` function.
+    otto.New().Run(`console.log("This runs in otto, under gopherjs, in the browser (!!)")`)
 
 You can imagine the `otto` code is quite complex, but it all compiles
-to javascript through GopherJS and runs fine in the browser.  You most
-probably will never run code like that in production however,
-hopefully :)
+to javascript through GopherJS and runs fine in the browser, showing
+how sophisticated GopherJS really is.
 
-#### Generating SVG
-
-[This article](http://www.gopherjs.org/blog/2014/10/29/svgo/) shows
-how to use the Go library [SVGo](https://github.com/ajstarks/svgo) in
-a very terse and neat way. Let's try it here:
-
-Get the dependency with `go get github.com/ajstarks/svgo`. Then add a
-new function to main and define it as such:
-
-```
-func genSVG() {
-    var output bytes.Buffer
-
-    canvas := svg.New(&output)
-    canvas.Start(250, 250)
-    canvas.Circle(125, 125, 100, "fill:#28262C; stroke:#5BA642; stroke-width:5px")
-    canvas.Text(125, 135, "GopherJS!", "text-anchor:middle; font-size:36px; fill:#EB5633")
-    canvas.End()
-
-    time.Sleep(1 * time.Second)
-
-    js.Global.Get("document").Get("body").Set("innerHTML", output.String())
-}
-```
-
-This shows a nice generation library being used directly in the
-browser, with no code change, and can run on all platforms natively,
-shipped as a single binary, and as we're going to see, we'll be able
-to run such code many other places.
-
-Continue on...
-
-
-<!--
-
-Would we try this one too ?
-
-#### Image manipulations
-
-https://github.com/nfnt/resize
-
--->
+The generated `gopherjs.js` file is enlarged because the whole
+javascript interpreter is in there.
 
 
 #### GopherJS Conclusion
@@ -279,15 +243,20 @@ Some might think it's stupidity, but I think they're wrong.  It might
 just be the future of the web.  Read more about [WebAssembly
 here](https://medium.com/javascript-scene/what-is-webassembly-the-dawn-of-a-new-era-61256ec5a8f6).
 
+Check out https://github.com/tidwall/digitalrain and its
+[live demo](http://tidwall.github.io/digitalrain/) to see an app in
+action. It's alllll Go.
+[This thread](https://groups.google.com/forum/#!topic/golang-nuts/2xhqPFpzEos)
+lists more examples.
+
 Last note, is about
 [cmd-go-js](https://github.com/gophergala2016/cmd-go-js) which is a
 "feature branch" of the `go` command, that supports GopherJS as an
 additional `GOARCH=js`.
 
 
-## Python
 
-### gopy
+## Python, via gopy
 
 [gopy](https://github.com/go-python/gopy) is a deceptively simply way
 to write Go code and load it in Python.
@@ -296,11 +265,7 @@ Let's first install:
 
     go get -v github.com/go-python/gopy
 
-Let's try it out by writing some code in `user.go`, in a clean directory:
-
-    mkdir -p $GOPATH/src/github.com/abourget/polyglot/ext; cd !$
-
-then in `lib.go`:
+Write in `ext/user.go`:
 
 ```
 package ext
@@ -314,9 +279,8 @@ type User struct {
 
 We'll add the `SetPassword(password string)` method that will use a
 really powerful Go encryption that we'll
-[take from here](http://www.dotnetperls.com/rot13-go).  I just love
-that algorithm, because using this very method, `cat` get encrypted to
-`png` !
+[take from here](http://www.dotnetperls.com/rot13-go).  I loooove
+that algorithm, because *encrypts* `cat` as `png`.
 
 ```
 func (u *User) SetPassword(input string) {
@@ -327,19 +291,18 @@ func (u *User) SetPassword(input string) {
 Don't forget the content of the `rot13` function below
 `SetPassword()`.
 
-Soon, you,ll be able to use it from Python !
+Soon, you'll be able to use it from Python !
 
 Run:
 
     $ gopy bind .
 
-This generates a `.so` file that we can load directly with Python's
-`import ext`:
+This generates an `ext.so` file that we can load directly with
+Python's `import ext`:
 
     $ python
     >>> import ext
-    >>> u1 = ext.User()
-    >>> u1.Fullname = "My name"
+    >>> u1 = ext.User(Fullname="My name")
     >>> u1.Fullname
     'My name'
     >>> u1.SetPassword("this is a very secretive password and cat")
@@ -358,8 +321,13 @@ Let's try it in Python:
 
     $ python
     >>> import codecs
+    >>> codecs.encode("cat", "rot13")
+    'png'
+
+What makes our use case interesting is this:
+
     >>> import thread
-    >>> thread.start_new_thread(lambda: [codecs.encode("have a cat", "rot_13") for x in xrange(10000000)])
+    >>> thread.start_new_thread(lambda: [codecs.encode("have a cat", "rot_13") for x in xrange(10000000)], ())
 
 and watch out your CPUs.  Welcome to the GIL: you can't have more than
 one core run Python code.
@@ -402,7 +370,7 @@ func MaxOutResources() func() {
 
 This function will spin 4 goroutines, in parallel of the Python
 process, doing incredible calculations, and allows the caller to shut
-down the operations, tapping into the sweet Go concurrency system.
+down the operations, tapping into Go's concurrency system.
 
 Now rebuilding and running through python would look like:
 
@@ -416,13 +384,11 @@ Now watch your CPU max out _all your cores_ !
 
 Call `f()` to stop everything:
 
-```
     >>> f()
     ffiieeeww! cat
     ffiieeeww! cat
     ffiieeeww! cat
     ffiieeeww! cat
-```
 
 Now you know what 100000 iterations of ROT13 does to your passwords.
 
