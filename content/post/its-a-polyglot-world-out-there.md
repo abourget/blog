@@ -6,9 +6,6 @@ Tags:
 date: 2016-01-14T11:04:24-05:00
 draft: true
 title: Go bridges to Javascript and Python
-#alternate_title: Go in a polyglot world: bridges to other languages and platforms
-#alternate_title: In a polyglot world: Go bridges to other languages and platforms
-#alternate_title: Overview of Go bridges to other languages and platforms
 
 ---
 
@@ -34,15 +31,26 @@ TODO:
 
 
 
+
+
+
+
+
      Alexandre Bourget - Data Scientist @ Intel Security
                       @bourgetalexndre
 
                Golang Montréal - Feb 22nd 2016
 
+
+
+
 Go bridges to Javascript and Python.
+
+
 
 We'll demonstrate Go bridges to Javascript (otto, GopherJS) and Python
 (gopy). Everything in this session will be live coded from scratch.
+
 
 
 
@@ -335,9 +343,11 @@ one core run Python code.
 So let's try an example that makes Go shine: concurrency and
 multi-core use -- breaking the dreaded Global Interpreter Lock !
 
-Add to a new `maximus.go` such a thing:
+Add to a new `ext/maximus.go` such a thing:
 
 ```
+package ext
+
 func MaxOutResources() func() {
 	done := make(chan struct {})
 
@@ -427,295 +437,34 @@ bindings to call into the CPython 2 C-level API.
 
 
 
-## Ruby FFI and c-shared build mode
-
-[ffi](https://github.com/ffi/ffi/) is [Foreign Function
-Interface](https://en.wikipedia.org/wiki/Foreign_function_interface)
-for Ruby.  It allows you to write native code, in some other language,
-and to/from it from Ruby.
-
-Today we're interested in Go, so let's use the `ffi` gem to call
-to/from Go
-
-<!-- https://c7.se/go-and-ruby-ffi/ -->
-
-First, we install the `ffi` gem:
-
-    gem install ffi
-
-    # On Linux, you might need `ruby1.9.1-dev` or `ruby2.0-dev` installed
-
-Now let's define `libsum.go` (ripped from https://c7.se/go-and-ruby-ffi/):
-
-    package main
-
-    import "C"
-
-    //export add
-    func add(a, b int) int {
-    	return a + b
-    }
-
-    func main() {}
-
-we'll build it with:
-
-    go build -buildmode=c-shared -o libsum.so libsum.go
-
-and we'll create a `sum.rb` file with:
-
-    require 'ffi'
-
-    module Sum
-      extend FFI::Library
-      ffi_lib './libsum.so'
-      attach_function :add, [:int, :int], :int
-    end
-
-    puts Sum.add(15, 27)
-
-Let's try to run it with `ruby` now:
-
-    ruby sum.rb
-
-Now notice there is a SEGFAULT there, It seems there's an issue,
-either with FFI or with my system configuration. I've reported the
-issue, but YMMV.
-
-Now let's add a twist.  What if we could interpret ruby code directly
-in Go, like we did with Javascript ?
-
-The `grubby` folks made a Ruby interpreter, in native Go.  Bear with
-me here though, **it's pretty rough!**.
-
-Get it:
-
-    go get github.com/grubby/grubby
-
-It comes with programs that replace `irb` and `ruby` with grubby's
-implementation. Find it under `main/irb` and `main/ruby`.
-
-Let's add a function to our ruby code, and then call it through FFI:
-
-    module Sum
-      extend FFI::Library
-      ffi_lib './libsum.so'
-      attach_function :add, [:int, :int], :int
-      attach_function :runCode, [:string], :string
-    end
-
-    puts Sum.runCode(<<-DOC
-
-    require 'fileutils'
-
-    puts "This runs inside grubby and adds stuff:", 5 + 7
-
-    return FileUtils.pwd()
-
-    DOC
-    )
-
-Add something like this to `libsum.go`:
-
-    //export runCode
-    func runCode(codePtr *C.char) string {
-    	code := C.GoString(codePtr)
-
-    	vm := vm.NewVM(os.Getenv("GOPATH")+"/src/github.com/grubby/grubby", "my VM")
-    	defer vm.Exit()
-
-    	//fmt.Printf("Running code: %s\n", code)
-    	res, err := vm.Run(code)
-    	if err != nil {
-    		return fmt.Sprintf("error: %s", err)
-    	}
-
-    	if res != nil {
-    		fmt.Println("Class:", res.Class().Name())
-    		fmt.Println("Result:", res.String())
-    		return res.String()
-    	}
-
-    	return "done"
-    }
-
-You'll need to symlink the `grubby` path to `~/.grubby` for the `lib`
-content to load through `require` calls:
-
-    ln -s $GOPATH/src/github.com/grubby/grubby ~/.grubby
-
-and let's rebuild and run the `sum.rb` file again:
-
-    go build -buildmode=c-shared -o libsum.so libsum.go && ruby sum.rb
-
-And we'll see:
-
-    This runs inside grubby and adds stuff:
-    12
-    Class: String
-    Result: /home/abourget/go/src/github.com/abourget/polyglot/ffi
-    /home/abourget/go/src/github.com/abourget/polyglot/ffi
-    We're done
-
-You do need to know that `grubby` is *very* experimental, however the
-FFI stuff should be very useable using Cgo bindings.
-
-#### Other ways
-
-There are (at least) two other ways to interact with Ruby from/to Go:
-
-* The first, https://github.com/DavidHuie/quartz, involves running a
-  separate process and communicating through an RPC protocol.
-
-* The second, is a binding to `mruby` in Go, by none other than
-  HashiCorp's founder, Mitchell Hashimoto (of Vagrant fame). Check it
-  here: https://github.com/mitchellh/go-mruby
-
-
-
-## Go Mobile
-
-[Go Mobile](https://github.com/golang/mobile) allows you to write
-libraries for iOS and Android that you can load in their respective
-IDE.  You can also write native application that compile to native
-packages.  The APIs available for the native applications do not
-include any of the GUI stuff at all at this time, except OpenGL that
-works on both platforms.  Do remember that all this is early stage.
-
-Get it with:
-
-    go get -v golang.org/x/mobile/cmd/gomobile
-
-We'll need to install the `gomobile` toolchain for Android:
-
-    gomobile init
-
-I like how most things in Go are one-liners, with almost no output.
-
-Create a new directory and go into it:
-
-    mkdir -p $GOPATH/src/github.com/abourget/polyglot/mobile; cd !$
-
-Let's copy the example app we find at https://godoc.org/golang.org/x/mobile/app into our `main.go` and start from there:
-
-```
-package main
-
-func main() {
-	app.Main(func(a app.App) {
-		for e := range a.Events() {
-			switch e := a.Filter(e).(type) {
-			case lifecycle.Event:
-				// ...
-			case paint.Event:
-				log.Print("Call OpenGL here.")
-				a.Publish()
-			}
-		}
-	})
-}
-```
-
-Now we'll tweak our program slightly to make a POST request when the
-state of the app changes:
-
-```
-			switch e := a.Filter(e).(type) {
-			case lifecycle.Event:
-				_, _ = http.Post(fmt.Sprintf("http://192.168.86.151:8888?from=%s&to=%s", e.From, e.To), "", nil)
-			...
-```
-
-Let's use this simple server to see what we receive (in
-`serve/main.go` or something):
-
-```
-func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		cnt, _ := httputil.DumpRequest(r, false)
-		os.Stdout.Write(cnt)
-	})
-	fmt.Println("Listening")
-	http.ListenAndServe(":8888", nil)
-}
-```
-
-I'm going to use `genymotion` to simulate an Android device. The goal
-is to have the program injected in the VM as fast as possible.
-
-Let's compile that as an `.apk` and see what happens:
-
-    gomobile install
-
-Boom, it's installed directly to the device. This one will be called
-`Mobile` as its in the `mobile` program package.
-
-Notice in the `adb logcat`, the `log.Print` call being
-displayed. Notice also the state changes. It's very barebone, but
-we've done much with very little until now.
-
-More details can be found on
-[the Go Mobile wiki](https://github.com/golang/go/wiki/Mobile).
-
-
-## Cross-platform cross-compilation
-
-I would have forgotten a major piece if I hadn't touched this last
-subject.
-
-One of Go's major feature is the ability to cross-compile to any
-platform, from any platform.  On Linux, build for Windows, on Windows,
-build for Mac OS X, etc..
-
-And it's the simplicity of it all that makes it the most attractive:
-
-    GOOS=windows GOARCH=386 go build -v .
-
-for a given program.  Then try it through `wine` or look with `file`
-what type of executable you have at hand:
-
-    file program.exe
-    wine program.exe
-
-Go uses _build tags_ to decide whether a file gets included in the
-compilation process or not.
-
-Any filename ending with `_windows.go` will only be compiled under the
-`windows` GOOS target, same with `_darwin.go` or `_linux.go`.
-
-Additionally, you can use
-[build constraints](https://golang.org/pkg/go/build/#hdr-Build_Constraints)
-to specify such tags inside the file. Example:
-
-    // +build !windows
-
-meaning that we want it on all platforms except Windows.
-
-
-
-## Lua VM
-
-I was originally going to make a demonstration of the different Go
-implementations of Lua, but at the next meetup, we will have one of
-the main authors of `go-lua` present his work directly.
-
-As a reference:
-
-* https://github.com/Shopify/go-lua
-* https://github.com/yuin/gopher-lua
-
-
-
-## Conclusions
-
-Note how when you write your dynamic/scripting language in Go and you
-immediately gain embeddability and cross-platform portability ! How
-fantastic!  This is a challenge to C, where toolchain issues prevent
-true cross-platform portability (at least misses the *easy* part).
-
-
-
-### Other oddities
+# Conclusion
+
+I initially wanted to do a talk that covered all bindings to other
+languages, but we wouldn't have had time to see any of them.  I leave
+links here for your curiosity and many some other time I'll cover
+other bridges.
+
+## Other bridges
+
+**Ruby** via https://github.com/ffi/ffi/, see
+https://c7.se/go-and-ruby-ffi/ . See also a very experimental Ruby
+interpreter https://github.com/grubby/grubby .  There is also
+https://github.com/DavidHuie/quartz which involes running a separate
+process and transparently communicating via RPC. The last is is a
+binding to `mruby` in Go, by none other than HashiCorp's founder,
+Mitchell Hashimoto (of Vagrant fame). Check it here:
+https://github.com/mitchellh/go-mruby .
+
+**Android** and **iOS** via
+[Go Mobile](https://github.com/golang/mobile) which allows you to
+write libraries for iOS and Android that you can load in their
+respective IDE.  You can also write native application that compile to
+native packages. More details on
+[the Go Mobile wiki](https://github.com/golang/go/wiki/Mobile)
+
+**Lua** via pure-go implementations of the language. There are actually *two* of them, https://github.com/Shopify/go-lua and https://github.com/yuin/gopher-lua .
+
+## Other oddities
 
 campher: Perl bindings for Go, by Brad Fitzpatrick: https://github.com/bradfitz/campher
 llgo: LLVM front-end for Go, in Go: http://llvm.org/svn/llvm-project/llgo/trunk/README.TXT
@@ -732,5 +481,3 @@ scripting language interpreter: [igo](https://github.com/sbinet/igo) and
 
 Those interested in my `.emacs.d` dir,
 [it is available here](https://github.com/abourget/my.emacs.d).
-
-<-- maybe a quick demo of `gore`? too off-topic ? -->
