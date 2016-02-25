@@ -67,6 +67,8 @@ between Go and other languages.  It is not meant to be exhaustive nor
 does it go very deep in each subject, but I hope it is at least
 entertaining.
 
+{{< youtube YmI7Gw4iq3w >}}
+
 <!--more-->
 
 ## Javascript
