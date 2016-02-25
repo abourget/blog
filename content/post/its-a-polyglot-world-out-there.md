@@ -1,10 +1,9 @@
----
+<---
 Tags:
  - python
  - javascript
  - golang
-date: 2016-01-14T11:04:24-05:00
-draft: true
+date: 2016-02-25T10:39:24-05:00
 title: Go bridges to Javascript and Python
 
 ---
@@ -19,6 +18,7 @@ Preparation for the talk:
 * Clean the Desktop
 * Temporarily change the background image of my desktop
 * Lock preferences: don,t close or lock the screen during presentation.
+* Start within a README.md in polyglot/
 
 TODO:
  * add yasnippet for `alert` in GopherJS land
