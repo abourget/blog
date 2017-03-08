@@ -6,7 +6,8 @@ baseurl: "https://blog.abourget.net"
 paginate: 10 # optional
 disqusShortname: "blogabourget" # optional
 
-DefaultContentLang: en
+defaultContentLang: en
+defaultContentLanguageInSubdir: true
 
 Languages:
   en:
