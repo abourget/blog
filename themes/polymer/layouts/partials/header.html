@@ -1,5 +1,5 @@
 {{ $baseurl := .Site.BaseURL }}
-{{ $lang := .Site.CurrentLanguage }}
+{{ $lang := .Site.Language.Lang }}
 <!doctype html>
 <html lang="{{.Site.LanguageCode}}">
 <head>
@@ -236,24 +236,18 @@
           <a href="{{$baseurl}}/{{$lang}}/index.xml"><paper-icon-button src="{{$baseurl}}/images/feed-dreamstale27.png"></paper-icon-button></a>
 
 
-        {{if .Site.Multilingual}}
-          {{if .IsPage}}
-            {{ range $txLang := .Site.Languages }}
-              {{if ne $lang $txLang}}
-                {{if isset $.Translations $txLang}}
-                  <a href="{{ (index $.Translations $txLang).Permalink }}">{{ i18n ( printf "language_switcher_%s" $txLang ) }}</a>
-                {{else}}
-                  <a href="/{{$txLang}}">{{ i18n ( printf "language_switcher_%s" $txLang ) }}</a>
-                {{end}}
-              {{end}}
+        {{if .IsPage}}
+          {{if $.IsTranslated }}
+            {{ range $tx := $.Translations }}
+              <a href="{{ $tx.Permalink }}">{{ i18n ( printf "language_switcher_%s" $tx.Lang ) }}</a>
             {{end}}
           {{end}}
+        {{end}}
 
-          {{if .IsNode}}
-            {{ range $txLang := .Site.Languages }}
-              {{if ne $lang $txLang}}
-                <a href="/{{$txLang}}">{{ i18n ( printf "language_switcher_%s" $txLang ) }}</a>
-              {{end}}
+        {{if .IsNode}}
+          {{ range $txLang := .Site.Languages }}
+            {{if ne $lang $txLang.Lang}}
+              <a href="/{{$txLang.Lang}}">{{ i18n ( printf "language_switcher_%s" $txLang.Lang ) }}</a>
             {{end}}
           {{end}}
         {{end}}

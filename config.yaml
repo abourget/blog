@@ -8,7 +8,7 @@ disqusShortname: "blogabourget" # optional
 
 DefaultContentLang: en
 
-Multilingual:
+Languages:
   en:
     weight: 1
 
