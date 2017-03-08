@@ -18,20 +18,6 @@ Languages:
     languageCode: "en-US"
     copyright: "(ɔ) 2015 Copyleft. Alexandre Bourget."
 
-    params:
-      author: "Alexandre Bourget"
-      profile: "images/profile.jpg" # optional
-      cover: "images/cover-bw.jpg" # optional
-      twitter: "bourgetalexndre" # optional
-      github: "abourget" # optional
-      linkedin: "alexandrebourget" # optional
-      googleAnalyticsUserID: "UA-12745853-1"
-
-      # for lanyon-hugo theme, for print
-      DateForm: "Jan 2 2006"
-
-
-
   fr:
     weight: 2
 
@@ -40,17 +26,16 @@ Languages:
     languageCode: "fr-CA"
     copyright: "(ɔ) 2015 Other override here.."
 
-    params:
-      author: "Alexandre Bourget"
-      profile: "images/profile.jpg" # optional
-      cover: "images/cover-bw.jpg" # optional
-      twitter: "bourgetalexndre" # optional
-      github: "abourget" # optional
-      linkedin: "alexandrebourget" # optional
-      googleAnalyticsUserID: "UA-12745853-1"
-
-      # for lanyon-hugo theme, for print
-      DateForm: "Jan 2 2006"
+params:
+  author: "Alexandre Bourget"
+  profile: "images/profile.jpg" # optional
+  cover: "images/cover-bw.jpg" # optional
+  twitter: "bourgetalexndre" # optional
+  github: "abourget" # optional
+  linkedin: "alexandrebourget" # optional
+  googleAnalyticsUserID: "UA-12745853-1"
+  # for lanyon-hugo theme, for print
+  DateForm: "Jan 2 2006"
 
 permalinks:
   post: "/:year/:month/:day/:filename/"
